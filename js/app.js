@@ -4,5 +4,5 @@ if ('serviceWorker' in navigator) {
     .then((registration) =>
       console.log('service worker registered', registration)
     )
-    .cath((error) => console.log('service worker not registered', error));
+    .catch((error) => console.log('service worker not registered', error));
 }
