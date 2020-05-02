@@ -1,4 +1,4 @@
-const version = 'v3';
+const version = 'v4';
 const staticCacheName = 'site-static-' + version; // any name we want
 const dynamicCacheName = 'site-dynamic-' + version;
 
