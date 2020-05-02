@@ -1,4 +1,5 @@
 const staticCacheName = 'site-static-v2'; // any name we want
+const dynamicCache = 'site-dynamic-v1';
 
 const assets = [
   '/',
@@ -13,8 +14,6 @@ const assets = [
   'https://fonts.gstatic.com/s/materialicons/v50/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2',
   'manifest.json',
   '/img/icons/icon-144x144.png',
-  '/pages/about.html',
-  '/pages/contact.html',
 ];
 
 // install the service worker
@@ -57,7 +56,16 @@ self.addEventListener('fetch', (evt) => {
 
   evt.respondWith(
     caches.match(evt.request).then((cacheRes) => {
-      return cacheRes || fetch(evt.request); // return the cacheRes but if empty return initial request
+      // return the cacheRes but if empty return initial request
+      return (
+        cacheRes ||
+        fetch(evt.request).then((fetchRes) => {
+          return caches.open(dynamicCache).then((cache) => {
+            cache.put(evt.request.url, fetchRes.clone()); // key and value of the cache
+            return fetchRes; // to view the page in the browser
+          });
+        })
+      );
     })
   );
 });
