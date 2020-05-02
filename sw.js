@@ -1,5 +1,6 @@
-const staticCacheName = 'site-static-v2'; // any name we want
-const dynamicCacheName = 'site-dynamic-v2';
+const version = 'v3';
+const staticCacheName = 'site-static-' + version; // any name we want
+const dynamicCacheName = 'site-dynamic-' + version;
 
 const assets = [
   '/pages/fallback.html',
@@ -64,33 +65,34 @@ self.addEventListener('activate', (evt) => {
 
 // fetch event
 self.addEventListener('fetch', (evt) => {
-  // // console.log('fetch event', evt);
-  // evt.respondWith(
-  //   caches
-  //     .match(evt.request)
-  //     .then((cacheRes) => {
-  //       // return the cacheRes but if empty return initial request
-  //       return (
-  //         cacheRes ||
-  //         fetch(evt.request).then((fetchRes) => {
-  //           return caches.open(dynamicCacheName).then((cache) => {
-  //             if (!evt.request.url.startsWith('chrome-extension:')) {
-  //               // fix
-  //               cache.put(evt.request.url, fetchRes.clone()); // key and value of the cache
-  //               limitCacheSize(dynamicCacheName, 15);
-  //             }
-  //             return fetchRes; // to view the page in the browser
-  //           });
-  //         })
-  //       );
-  //     })
-  //     .catch(
-  //       (err) => {
-  //         if (evt.request.url.indexOf('.html') > -1) {
-  //           return caches.match('/pages/fallback.html');
-  //         }
-  //       }
-  //       // we don't have the page in our cache and the fetch fail because we are offline for exemple
-  //     )
-  // );
+  if (evt.request.url.indexOf('firestore.googleapis.com') === -1) {
+    evt.respondWith(
+      caches
+        .match(evt.request)
+        .then((cacheRes) => {
+          // return the cacheRes but if empty return initial request
+          return (
+            cacheRes ||
+            fetch(evt.request).then((fetchRes) => {
+              return caches.open(dynamicCacheName).then((cache) => {
+                if (!evt.request.url.startsWith('chrome-extension:')) {
+                  // fix
+                  cache.put(evt.request.url, fetchRes.clone()); // key and value of the cache
+                  limitCacheSize(dynamicCacheName, 15);
+                }
+                return fetchRes; // to view the page in the browser
+              });
+            })
+          );
+        })
+        .catch(
+          (err) => {
+            if (evt.request.url.indexOf('.html') > -1) {
+              return caches.match('/pages/fallback.html');
+            }
+          }
+          // we don't have the page in our cache and the fetch fail because we are offline for exemple
+        )
+    );
+  }
 });
