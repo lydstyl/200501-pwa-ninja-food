@@ -13,9 +13,20 @@ const assets = [
   '/img/dish.png',
   'https://fonts.googleapis.com/icon?family=Material+Icons',
   'https://fonts.gstatic.com/s/materialicons/v50/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2',
-  'manifest.json',
+  // 'manifest.json',
   '/img/icons/icon-144x144.png',
 ];
+
+// cache size limit function
+const limitCacheSize = (name, size) => {
+  caches.open(name).then((cache) => {
+    cache.keys().then((keys) => {
+      if (keys.length > size) {
+        cache.delete(keys[0]).then(limitCacheSize(name, size));
+      }
+    });
+  });
+};
 
 // install the service worker
 self.addEventListener('install', (evt) => {
@@ -67,6 +78,8 @@ self.addEventListener('fetch', (evt) => {
               if (!evt.request.url.startsWith('chrome-extension:')) {
                 // fix
                 cache.put(evt.request.url, fetchRes.clone()); // key and value of the cache
+
+                limitCacheSize(dynamicCacheName, 15);
               }
 
               return fetchRes; // to view the page in the browser
@@ -75,7 +88,11 @@ self.addEventListener('fetch', (evt) => {
         );
       })
       .catch(
-        (err) => caches.match('/pages/fallback.html')
+        (err) => {
+          if (evt.request.url.indexOf('.html') > -1) {
+            return caches.match('/pages/fallback.html');
+          }
+        }
         // we don't have the page in our cache and the fetch fail because we are offline for exemple
       )
   );
